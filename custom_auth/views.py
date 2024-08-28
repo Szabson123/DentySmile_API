@@ -12,6 +12,67 @@ from rest_framework.decorators import action
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework_simplejwt.tokens import RefreshToken
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
+from django.contrib.auth import authenticate
+
+
+class CustomLoginView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    @extend_schema(
+        request={
+            'application/json': {
+                'type': 'object',
+                'properties': {
+                    'first_name': {
+                        'type': 'string',
+                        'description': 'First name of the user',
+                    },
+                    'last_name': {
+                        'type': 'string',
+                        'description': 'Last name of the user',
+                    },
+                    'password': {
+                        'type': 'string',
+                        'description': 'User password',
+                    },
+                },
+                'required': ['first_name', 'last_name', 'password'],
+            }
+        },
+        responses={
+            200: OpenApiExample(
+                'Token obtained successfully',
+                value={
+                    'refresh': 'refresh_token',
+                    'access': 'access_token',
+                },
+            ),
+            400: OpenApiExample(
+                'Invalid credentials',
+                value={'detail': 'Invalid credentials'},
+            ),
+        }
+    )
+    def post(self, request):
+        first_name = request.data.get('first_name')
+        last_name = request.data.get('last_name')
+        password = request.data.get('password')
+
+        try:
+            user = CustomUser.objects.get(first_name=first_name, last_name=last_name)
+        except CustomUser.DoesNotExist:
+            return Response({"detail": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        user = authenticate(request, username=user.username, password=password)
+
+        if user is not None:
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+            })
+        else:
+            return Response({"detail": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 class ChangePasswordView(APIView):
@@ -40,39 +101,13 @@ class RegistrationViewSet(viewsets.ViewSet):
             user = serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response({'error': 'user with this email already exist'}, status=status.HTTP_400_BAD_REQUEST)
-    
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
-
 class LogoutView(APIView):
     permission_classes = [permissions.IsAuthenticated]
-
-    @extend_schema(
-        request={
-            'application/json': {
-                'type': 'object',
-                'properties': {
-                    'refresh': {
-                        'type': 'string',
-                        'description': 'Refresh token',
-                    },
-                },
-                'required': ['refresh'],
-            }
-        },
-        responses={
-            205: OpenApiExample(
-                'Token successfully blacklisted',
-                value={},
-            ),
-            400: OpenApiExample(
-                'Bad request',
-                value={'detail': 'Bad request'},
-            ),
-        }
-    )
+    
     def post(self, request):
         try:
             refresh_token = request.data['refresh']
@@ -81,7 +116,6 @@ class LogoutView(APIView):
             return Response(status=status.HTTP_205_RESET_CONTENT)
         except Exception as e:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        
 
 class CustomTokenRefreshView(TokenRefreshView):
     pass

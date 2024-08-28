@@ -8,11 +8,9 @@ from users.models import CustomUser
 class UserRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['id', 'phone_number', 'first_name', 'last_name', 'email', 'password']
+        fields = ['id', 'first_name', 'last_name', 'password']
         extra_kwargs = {
             'password': {'write_only': True, 'required': True},
-            'email': {'required': True},
-            'phone_number': {'required': True},
             'first_name': {'required': True},
             'last_name': {'required': True},
         }
@@ -21,16 +19,16 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         password = validated_data.pop('password')
         user = CustomUser(**validated_data)
         user.set_password(password)
+        user.is_active = True  
         user.save()
         return user
-
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
-        token['email'] = user.email
+        token['username'] = user.username
         return token
 
 
