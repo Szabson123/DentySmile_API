@@ -11,7 +11,7 @@ from rest_framework.decorators import action
 
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework_simplejwt.tokens import RefreshToken
-from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample, OpenApiResponse
 from django.contrib.auth import authenticate
 
 
@@ -91,6 +91,7 @@ class ChangePasswordView(APIView):
             return Response({"detail": "Password changed"}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 @extend_schema_view(create=extend_schema(exclude=True))
 class RegistrationViewSet(viewsets.ViewSet):
     @extend_schema(request=UserRegistrationSerializer, responses={201: UserRegistrationSerializer})
@@ -102,10 +103,10 @@ class RegistrationViewSet(viewsets.ViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response({'error': 'user with this email already exist'}, status=status.HTTP_400_BAD_REQUEST)
 
+
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
-from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample, OpenApiResponse
 
 class LogoutView(APIView):
     permission_classes = [permissions.IsAuthenticated]
