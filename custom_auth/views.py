@@ -101,7 +101,7 @@ class RegistrationViewSet(viewsets.ViewSet):
         if serializer.is_valid():
             user = serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response({'error': 'user with this email already exist'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'sth went wrong'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
