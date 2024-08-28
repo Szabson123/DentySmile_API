@@ -105,17 +105,53 @@ class RegistrationViewSet(viewsets.ViewSet):
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample, OpenApiResponse
+
 class LogoutView(APIView):
     permission_classes = [permissions.IsAuthenticated]
     
+    @extend_schema(
+        request={
+            'application/json': {
+                'type': 'object',
+                'properties': {
+                    'refresh': {
+                        'type': 'string',
+                        'description': 'Refresh token',
+                    },
+                },
+                'required': ['refresh'],
+            }
+        },
+        responses={
+            205: OpenApiResponse(
+                description="Token successfully blacklisted",
+                examples=[OpenApiExample(
+                    'Success',
+                    value={"detail": "Token blacklisted successfully"}
+                )]
+            ),
+            400: OpenApiResponse(
+                description="Bad request",
+                examples=[OpenApiExample(
+                    'Bad Request',
+                    value={"detail": "Invalid refresh token"}
+                )]
+            ),
+        }
+    )
     def post(self, request):
+        refresh_token = request.data.get('refresh')
+        if not refresh_token:
+            return Response({"detail": "Refresh token is required"}, status=status.HTTP_400_BAD_REQUEST)
+        
         try:
-            refresh_token = request.data['refresh']
             token = RefreshToken(refresh_token)
             token.blacklist()
             return Response(status=status.HTTP_205_RESET_CONTENT)
         except Exception as e:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class CustomTokenRefreshView(TokenRefreshView):
     pass
