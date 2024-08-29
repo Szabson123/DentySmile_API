@@ -1,5 +1,11 @@
 venv/
-Do Szymona/
+
+media/
+staticfiles/
+
+node/
+.env
+db.sqlite3
 
 *.pyc
 __pycache__/
