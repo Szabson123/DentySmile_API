@@ -31,11 +31,12 @@ else:
     DEBUG = False
 
 ALLOWED_HOSTS = [
+    'smile-pro-api-production.up.railway.app',
     'localhost', 
     '127.0.0.1', 
 ]
 CSRF_TRUSTED_ORIGINS = [
-
+    'https://smile-pro-api-production.up.railway.app',
 ]
 
 INSTALLED_APPS = [
@@ -45,7 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
+
     'rest_framework_simplejwt.token_blacklist',
     'rest_framework',
     'drf_spectacular',
