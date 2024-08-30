@@ -46,5 +46,9 @@ class CustomUser(AbstractUser):
     role = models.CharField(max_length=30, choices=ROLE, default='none')
     objects = UserManager()
 
-    def __str__(self):
+    USERNAME_FIELD = 'uuid'
+
+    def __str__(self) -> str:
+        if self.first_name and self.last_name:
+            return f'{self.first_name} {self.last_name}'
         return self.username

@@ -54,11 +54,11 @@ class CustomLoginView(APIView):
         password = request.data.get('password')
 
         try:
-            user = CustomUser.objects.get(id=user_uuid)
+            user = CustomUser.objects.get(uuid=user_uuid)
         except CustomUser.DoesNotExist:
             return Response({"detail": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
 
-        user = authenticate(request, username=user.username, password=password)
+        user = authenticate(request, username=user_uuid, password=password)
 
         if user is not None:
             refresh = RefreshToken.for_user(user)
