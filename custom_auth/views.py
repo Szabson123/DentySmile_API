@@ -23,20 +23,16 @@ class CustomLoginView(APIView):
             'application/json': {
                 'type': 'object',
                 'properties': {
-                    'first_name': {
+                    'uuid': {
                         'type': 'string',
-                        'description': 'First name of the user',
-                    },
-                    'last_name': {
-                        'type': 'string',
-                        'description': 'Last name of the user',
+                        'description': 'UUID of the user',
                     },
                     'password': {
                         'type': 'string',
                         'description': 'User password',
                     },
                 },
-                'required': ['first_name', 'last_name', 'password'],
+                'required': ['uuid', 'password'],
             }
         },
         responses={
@@ -54,12 +50,11 @@ class CustomLoginView(APIView):
         }
     )
     def post(self, request):
-        first_name = request.data.get('first_name')
-        last_name = request.data.get('last_name')
+        user_uuid = request.data.get('uuid')
         password = request.data.get('password')
 
         try:
-            user = CustomUser.objects.get(first_name=first_name, last_name=last_name)
+            user = CustomUser.objects.get(id=user_uuid)
         except CustomUser.DoesNotExist:
             return Response({"detail": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
 

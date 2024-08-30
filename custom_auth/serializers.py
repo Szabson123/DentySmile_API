@@ -8,7 +8,7 @@ from users.models import CustomUser
 class UserRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['id', 'first_name', 'last_name', 'password']
+        fields = ['id', 'first_name', 'last_name', 'password', 'uuid']
         extra_kwargs = {
             'password': {'write_only': True, 'required': True},
             'first_name': {'required': True},
@@ -28,7 +28,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
-        token['username'] = user.username
+        token['uuid'] = str(user.id)
         return token
 
 

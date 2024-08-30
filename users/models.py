@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.contrib.auth.models import UserManager as BaseUserManager
 from django.utils.text import slugify
+import uuid
 
 class UserManager(BaseUserManager):
     use_in_migrations = True
@@ -28,20 +29,13 @@ class UserManager(BaseUserManager):
         return self.create_user(username, password, **extra_fields)
 
 class CustomUser(AbstractUser):
-    REQUIRED_FIELDS = ['first_name', 'last_name']
+    id = models.AutoField(primary_key=True)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    username = models.CharField(max_length=150, unique=True, blank=True, null=True)
+    first_name = models.CharField(max_length=30, blank=True, null=True)
+    last_name = models.CharField(max_length=30, blank=True, null=True)
     is_active = models.BooleanField(default=True)
     objects = UserManager()
-
-    def save(self, *args, **kwargs):
-        if not self.pk:  
-            base_username = f'{slugify(self.first_name)}_{slugify(self.last_name)}'
-            counter = 1
-            username = base_username
-            while CustomUser.objects.filter(username=username).exists():
-                counter += 1
-                username = f'{base_username}{counter}'
-            self.username = username
-        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.username
