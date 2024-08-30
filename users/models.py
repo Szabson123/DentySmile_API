@@ -28,6 +28,13 @@ class UserManager(BaseUserManager):
 
         return self.create_user(username, password, **extra_fields)
 
+ROLE = [
+    ('admin', 'Admin'),
+    ('reception', 'Reception'),
+    ('doctor', 'Doctor'),
+    ('none', 'None')
+]
+
 class CustomUser(AbstractUser):
     id = models.AutoField(primary_key=True)
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
@@ -35,6 +42,7 @@ class CustomUser(AbstractUser):
     first_name = models.CharField(max_length=30, blank=True, null=True)
     last_name = models.CharField(max_length=30, blank=True, null=True)
     is_active = models.BooleanField(default=True)
+    role = models.CharField(max_length=30, choices=ROLE, default='none')
     objects = UserManager()
 
     def __str__(self):
