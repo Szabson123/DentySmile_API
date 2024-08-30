@@ -94,6 +94,7 @@ class ChangePasswordView(APIView):
 
 @extend_schema_view(create=extend_schema(exclude=True))
 class RegistrationViewSet(viewsets.ViewSet):
+    permission_classes = [permissions.AllowAny]
     @extend_schema(request=UserRegistrationSerializer, responses={201: UserRegistrationSerializer})
     @action(detail=False, methods=['POST'], permission_classes=[permissions.AllowAny])
     def register(self, request, *args, **kwargs):
