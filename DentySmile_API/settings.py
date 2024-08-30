@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     
     'custom_auth',
     'users',
+    'institution',
 ]
 
 AUTH_USER_MODEL = 'users.CustomUser'
