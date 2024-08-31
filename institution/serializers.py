@@ -12,3 +12,22 @@ class InstitutionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Institution
         fields = ['name', 'localization', 'owner', 'admin', 'users'] 
+        
+
+class CreatingUserToInsitutionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'first_name', 'last_name', 'password', 'uuid']
+        extra_kwargs = {
+            'password': {'write_only': True, 'required': True},
+            'first_name': {'required': True},
+            'last_name': {'required': True},
+        }
+
+    def create(self, validated_data):
+        password = validated_data.pop('password')
+        user = CustomUser(**validated_data)
+        user.set_password(password)
+        user.is_active = True  
+        user.save()
+        return user

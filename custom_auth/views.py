@@ -3,7 +3,7 @@ from drf_spectacular.utils import extend_schema, extend_schema_view
 
 from users.models import CustomUser
 from institution.models import Institution
-from .serializers import UserRegistrationSerializer, CustomTokenObtainPairSerializer, ChangePasswordSerializer
+from .serializers import CustomTokenObtainPairSerializer, ChangePasswordSerializer
 from .permissions import IsAdminOrOwnerOfInstitution
 
 from rest_framework import viewsets, status, permissions
@@ -86,23 +86,6 @@ class ChangePasswordView(APIView):
         if serializer.is_valid():
             serializer.update(request.user, serializer.validated_data)
             return Response({"detail": "Password changed"}, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-@extend_schema_view(create=extend_schema(exclude=True))
-class RegistrationViewSet(viewsets.ViewSet):
-    permission_classes = [permissions.IsAuthenticated, IsAdminOrOwnerOfInstitution]
-
-    @extend_schema(request=UserRegistrationSerializer, responses={201: UserRegistrationSerializer})
-    @action(detail=True, methods=['POST'], url_path='register', url_name='register')
-    def register(self, request, pk=None):  
-        institution = Institution.objects.get(pk=pk)
-        serializer = UserRegistrationSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
-            user.institution = institution 
-            user.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
