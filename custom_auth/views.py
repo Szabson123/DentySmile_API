@@ -2,7 +2,9 @@ from django.shortcuts import render
 from drf_spectacular.utils import extend_schema, extend_schema_view
 
 from users.models import CustomUser
+from institution.models import Institution
 from .serializers import UserRegistrationSerializer, CustomTokenObtainPairSerializer, ChangePasswordSerializer
+from .permissions import IsAdminOrOwnerOfInstitution
 
 from rest_framework import viewsets, status, permissions
 from rest_framework.views import APIView
@@ -89,15 +91,19 @@ class ChangePasswordView(APIView):
 
 @extend_schema_view(create=extend_schema(exclude=True))
 class RegistrationViewSet(viewsets.ViewSet):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated, IsAdminOrOwnerOfInstitution]
+
     @extend_schema(request=UserRegistrationSerializer, responses={201: UserRegistrationSerializer})
-    @action(detail=False, methods=['POST'], permission_classes=[permissions.AllowAny])
-    def register(self, request, *args, **kwargs):
+    @action(detail=True, methods=['POST'], url_path='register', url_name='register')
+    def register(self, request, pk=None):  
+        institution = Institution.objects.get(pk=pk)
         serializer = UserRegistrationSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
+            user.institution = institution 
+            user.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response({'error': 'sth went wrong'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
