@@ -8,27 +8,23 @@ from rest_framework.decorators import action
 from .models import Institution
 from .serializers import InstitutionSerializer, CreatingUserToInsitutionSerializer
 from users.models import CustomUser
-from custom_auth.permissions import IsAdminOrOwnerOfInstitution
+from custom_auth.permissions import IsAdminOrOwnerOfInstitution, IsSuperAdmin
 
 from drf_spectacular.utils import extend_schema, extend_schema_view
 
 class InstitutionViewSet(viewsets.ModelViewSet):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsSuperAdmin]
     serializer_class = InstitutionSerializer
+    queryset = Institution.objects.all()
 
-    def list(self, request):
-        user = request.user
-        if not user.superadmin:
-            return Response({'error': 'You are not a superadmin and cannot access this information'}, status=status.HTTP_403_FORBIDDEN)
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
 
-        institutions = Institution.objects.all()
-        serializer = InstitutionSerializer(institutions, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
-    def retrieve(self, request, pk=None):
-        institution = get_object_or_404(Institution, pk=pk)
-        serializer = InstitutionSerializer(institution)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
     
 
 @extend_schema_view(create=extend_schema(exclude=True))
