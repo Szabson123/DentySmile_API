@@ -1,21 +1,20 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.contrib.auth.models import UserManager as BaseUserManager
-from django.utils.text import slugify
 import uuid
 
 class UserManager(BaseUserManager):
     use_in_migrations = True
 
-    def create_user(self, username, password=None, **extra_fields):
-        if not username:
-            raise ValueError('The given username must be set')
-        user = self.model(username=username, **extra_fields)
+    def create_user(self, uuid=None, password=None, **extra_fields):
+        if uuid is None:
+            uuid = uuid.uuid4()
+        user = self.model(uuid=uuid, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, username, password=None, **extra_fields):
+    def create_superuser(self, uuid=None, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
 
@@ -24,9 +23,7 @@ class UserManager(BaseUserManager):
         if extra_fields.get('is_superuser') is not True:
             raise ValueError('Superuser must have is_superuser=True.')
 
-        extra_fields['is_active'] = True
-
-        return self.create_user(username, password, **extra_fields)
+        return self.create_user(uuid=uuid or str(uuid.uuid4()), password=password, **extra_fields)
 
 ROLE = [
     ('admin', 'Admin'),
@@ -47,8 +44,7 @@ class CustomUser(AbstractUser):
     objects = UserManager()
 
     USERNAME_FIELD = 'uuid'
+    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
 
-    def __str__(self) -> str:
-        if self.first_name and self.last_name:
-            return f'{self.first_name} {self.last_name}'
-        return self.username
+    def __str__(self):
+        return f'{self.username or self.uuid}'
