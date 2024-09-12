@@ -100,7 +100,7 @@ DATABASES = {
 }
 
 
-POSTGRES_LOCALLY = True
+POSTGRES_LOCALLY = False
 if ENVIRONMENT == 'production' or POSTGRES_LOCALLY == True:
     DATABASES['default'] = dj_database_url.parse(env('DATABASE_URL'))
 
@@ -179,7 +179,3 @@ SIMPLE_JWT = {
 
 CORS_ALLOW_ALL_ORIGINS = True
 
-AUTHENTICATION_BACKENDS = [
-    'custom_auth.backends.CustomAuthBackend',
-    'django.contrib.auth.backends.ModelBackend',
-]
